@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PsyGen - Tự Do Là Bản Sắc</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        :root {
+            --main-grad: linear-gradient(270deg, #ffafcc, #a2d2ff, #ffafcc);
+            --pink: #ffafcc;
+            --blue: #a2d2ff;
+            --text: #2d3436;
+            --card-bg: #ffffff;
+            --bg-body: #fdfdfd;
+            --input-border: #ddd;
+            --shadow: rgba(0,0,0,0.05);
+        }
+
+        [data-theme="dark"] {
+            --text: #ffffff;
+            --card-bg: #2d3436;
+            --bg-body: #1a1a1a;
+            --input-border: #444;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
+        body { margin: 0; background: var(--bg-body); color: var(--text); padding-top: 70px; }
+
+        header { 
+            background: var(--card-bg); padding: 10px 0; position: fixed; 
+            width: 100%; top: 0; z-index: 10000; box-shadow: 0 2px 20px var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+        .nav-container { max-width: 1200px; margin: auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .logo-link { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .logo-name { font-size: 1.8rem; font-weight: 800; background: var(--main-grad); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradMove 3s linear infinite; }
+        nav a { color: var(--text); text-decoration: none; margin-left: 20px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; cursor: pointer; }
+        .theme-btn { background: var(--main-grad); border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; color: white; margin-left: 20px; }
+
+        @keyframes gradMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+        .hero { position: relative; width: 100%; height: 75vh; overflow: hidden; }
+        .slide { position: absolute; width: 100%; height: 100%; opacity: 0; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; transition: 1.5s ease-in-out; }
+        .slide.active { opacity: 1; z-index: 1; }
+        .overlay-black { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); }
+        .hero-content { z-index: 10; text-align: center; color: white; padding: 20px; }
+        .hero-content h1 { font-size: 3rem; margin: 0; }
+
+        .container { max-width: 1100px; margin: auto; padding: 60px 20px; }
+        .card { background: var(--card-bg); padding: 40px; border-radius: 30px; margin-bottom: 50px; box-shadow: 0 10px 30px var(--shadow); }
+        .title { font-size: 2.2rem; font-weight: 800; text-align: center; background: var(--main-grad); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradMove 3s linear infinite; margin-bottom: 40px; }
+
+        .research-box { border-left: 4px solid var(--pink); padding-left: 20px; margin-bottom: 35px; }
+        .research-box h3 { color: var(--blue); margin-top: 0; font-size: 1.4rem; }
+        .research-box ul { padding-left: 20px; line-height: 1.8; }
+        .research-box li { margin-bottom: 8px; }
+
+        .external-links { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 25px; justify-content: center; }
+        .btn-link { 
+            text-decoration: none; padding: 12px 25px; border-radius: 50px; 
+            background: #fff; border: 2px solid var(--blue); color: var(--blue);
+            font-weight: 800; transition: 0.4s; display: inline-block;
+            text-transform: uppercase; font-size: 0.8rem;
+        }
+        .btn-link:hover { 
+            background: var(--main-grad); color: white; border-color: transparent;
+            transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 20px var(--shadow);
+        }
+
+        .ans-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .ans-label { padding: 10px 18px; border: 2px solid var(--input-border); border-radius: 30px; cursor: pointer; position: relative; overflow: hidden; z-index: 1; transition: 0.4s; font-weight: 600; font-size: 0.85rem; }
+        .ans-label input { display: none; }
+        .ans-label::before { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: var(--main-grad); background-size: 200% 200%; transition: 0.5s; z-index: -1; }
+        .ans-label:has(input:checked) { color: white; border-color: transparent; }
+        .ans-label:has(input:checked)::before { left: 0; animation: gradMove 2s infinite linear; }
+
+        .chat-box { height: 500px; border: 2px solid var(--blue); border-radius: 25px; overflow: hidden; display: flex; flex-direction: column; background: var(--card-bg); }
+        .chat-header { background: var(--main-grad); padding: 15px; display: flex; align-items: center; gap: 10px; color: white; font-weight: 800; }
+        .psycat-logo { width: 35px; height: 35px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
+        .chat-view { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 12px 18px; border-radius: 20px; max-width: 85%; line-height: 1.5; }
+        .bubble.bot { background: #f0f0f0; color: #333; align-self: flex-start; }
+        .bubble.user { background: var(--main-grad); color: white; align-self: flex-end; }
+        .form-inp { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--card-bg); color: var(--text); }
+
+        .cabinet { text-align: center; background: var(--main-grad); padding: 50px; border-radius: 30px; color: white; animation: gradMove 5s infinite; }
+        .bottle { width: 100px; cursor: pointer; transition: 0.4s; }
+        .bottle:hover { transform: scale(1.1) rotate(15deg); }
+
+        .yoga-item { background: rgba(162,210,255,0.08); border: 1px solid var(--blue); padding: 25px; border-radius: 20px; margin-bottom: 20px; }
+        .action-btn { border: none; background: var(--main-grad); background-size: 200% 200%; color: white; padding: 10px 22px; border-radius: 50px; cursor: pointer; font-weight: 700; animation: gradMove 4s infinite; margin-right: 8px; margin-top: 10px; }
+
+        .btn-big { width: 100%; padding: 18px; border-radius: 50px; border: none; background: var(--main-grad); color: white; font-weight: 800; cursor: pointer; animation: gradMove 3s infinite; }
+        .advice-display { background: rgba(162,210,255,0.15); border-left: 6px solid var(--blue); padding: 25px; border-radius: 20px; margin-top: 25px; }
+        
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 15px; margin-top: 15px; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        .expert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .expert-card { background: var(--card-bg); border: 2px solid var(--blue); border-radius: 20px; padding: 25px; transition: 0.3s; text-align: center; text-decoration: none; color: inherit; display: block; }
+        .expert-card img { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid var(--pink); margin-bottom: 15px; }
+        .expert-card:hover { transform: translateY(-8px); border-color: var(--pink); box-shadow: 0 15px 30px var(--shadow); }
+
+        .disclaimer { font-size: 0.8rem; color: #888; text-align: center; margin-top: 15px; font-style: italic; }
+        
+        .contact-section { margin-top: 50px; text-align: center; padding: 40px; background: var(--card-bg); border-radius: 30px; box-shadow: 0 10px 30px var(--shadow); }
+        .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+        .contact-item { padding: 20px; border-radius: 15px; background: rgba(162,210,255,0.05); border: 1px solid var(--blue); }
+
+        footer { text-align: center; padding: 40px; border-top: 1px solid var(--input-border); opacity: 0.7; }
+        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:20000; align-items:center; justify-content:center; }
+        .note-paper { background: #fffef0; padding: 40px; width: 85%; max-width: 400px; color: #333; transform: rotate(-2deg); box-shadow: 5px 5px 20px rgba(0,0,0,0.3); border-radius: 5px; }
+
+        .contact-form { display: flex; flex-direction: column; gap: 15px; max-width: 600px; margin: 30px auto; }
+        .contact-form input, .contact-form textarea { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--input-border); background: var(--card-bg); color: var(--text); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="nav-container">
+        <a href="#" class="logo-link">
+            <img src="https://static.vecteezy.com/system/resources/thumbnails/012/004/459/small/female-head-with-brain-tree-logo-concept-organic-brain-tree-mind-concept-design-free-vector.jpg" alt="PsyGen Logo" class="logo-img">
+            <span class="logo-name">PsyGen</span>
+        </a>
+        <nav>
+            <a onclick="toSec('home')">Trang chủ</a>
+            <a onclick="toSec('research')">Nghiên cứu</a>
+            <a onclick="toSec('about-us')">About Us</a> 
+            <a onclick="toSec('yoga')">Thư giãn</a>
+            <a onclick="toSec('experts')">Chuyên gia</a>
+            <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+        </nav>
+    </div>
+</header>
+
+<section id="home" class="hero">
+    <div class="slide active" style="background-image: url('https://img.pikbest.com/backgrounds/20250514/graphic-design-modern-abstract-background-social-media-web-banners-sale-3d-technology_11714011.jpg!sw800');">
+        <div class="overlay-black"></div>
+        <div class="hero-content"><h1>PsyGen: Tự Do Là Bản Sắc</h1><p>Định nghĩa chính mình qua lăng kính tâm lý học hiện đại</p></div>
+    </div>
+    <div class="slide" style="background-image: url('https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTExL3Jhd3BpeGVsX29mZmljZV8zMF9hYnN0cmFjdF9ncmFkaWVudF93aGl0ZV9iYWNrZ3JvdW5kX3ZlY3Rvcl9wcl9kZGY3ZTJiNC0wMjU3LTRjMTUtOWFjNS0xMmQwZTA0N2E4MWYuanBn.jpg');">
+        <div class="overlay-black"></div>
+        <div class="hero-content"><h1>PsyGen - Tự Do Là Bản Sắc</h1><p>Không kì thị - Không phê phán - Luôn hỗ trợ</p></div>
+    </div>
+</section>
+
+<div class="container">
+    <section id="research" class="card">
+        <h2 class="title">Kiến Thức Khoa Học</h2>
+        
+        <div class="research-box">
+            <h3>1. Giới tính khi sinh ra (Sex Assigned at Birth)</h3>
+            <ul>
+                <li><b>Định nghĩa:</b> Được xác định dựa trên các yếu tố sinh học như giải phẫu, nội tiết tố và nhiễm sắc thể.</li>
+                <li><b>Sự đa dạng:</b> Không chỉ có Nam và Nữ, còn có người <b>Liên giới tính (Intersex)</b> — những người có các biến thể sinh học không khớp hoàn toàn với định nghĩa truyền thống về nam hay nữ (tỉ lệ khoảng 1/2.000).</li>
+                <li><b>Thuật ngữ:</b> Khuyến khích dùng "giới tính khi sinh ra" để phản ánh chính xác và tôn trọng cộng đồng người chuyển giới.</li>
+            </ul>
+        </div>
+
+        <div class="research-box">
+            <h3>2. Bản dạng giới & Cách thể hiện giới</h3>
+            <ul>
+                <li><b>Bản dạng giới (Gender Identity):</b> Là nhận thức sâu sắc bên trong của một người về giới của chính mình (có thể là nam, nữ, cả hai hoặc không là gì).</li>
+                <li><b>Cisgender (Người hợp giới):</b> Bản dạng giới khớp với giới tính khi sinh.</li>
+                <li><b>Transgender (Người chuyển giới):</b> Bản dạng giới khác với giới tính khi sinh.</li>
+                <li><b>Cách thể hiện giới (Gender Expression):</b> Cách một người bộc lộ giới thông qua ngoại hình (quần áo, tóc tai) và hành vi.</li>
+                <li><b>Vai trò giới (Gender Role):</b> Những kỳ vọng và tiêu chuẩn của xã hội áp đặt lên mỗi giới (ví dụ: nam phải mạnh mẽ, nữ phải dịu dàng).</li>
+            </ul>
+        </div>
+
+        <div class="research-box">
+            <h3>3. Xu hướng tính dục (Sexual Orientation)</h3>
+            <p>Chỉ sự hấp dẫn về tình cảm hoặc tình dục đối với người khác. Sự đa dạng vượt xa khỏi các khái niệm quen thuộc, bao gồm hàng chục thuật ngữ như:</p>
+            <ul>
+                <li><b>Toàn tính (Pansexual):</b> Thu hút bởi con người bất kể giới tính.</li>
+                <li><b>Vô tính (Asexual):</b> Ít hoặc không có nhu cầu tình dục nhưng vẫn có thể có nhu cầu tình cảm.</li>
+            </ul>
+        </div>
+
+        <div class="research-box">
+            <h3>4. Phá vỡ Hệ nhị nguyên giới (Gender Binary)</h3>
+            <ul>
+                <li><b>Hệ nhị nguyên:</b> Quan điểm truyền thống chỉ có hai cực đối lập Nam - Nữ.</li>
+                <li><b>Quang phổ giới (Gender Spectrum):</b> Coi giới tính như một dải màu biến thiên, nơi một người có thể nằm ở bất kỳ điểm nào hoặc thay đổi theo thời gian.</li>
+                <li><b>Khái niệm liên quan:</b> Non-binary (Phi nhị nguyên giới) hoặc Genderfluid (Linh hoạt giới).</li>
+            </ul>
+        </div>
+
+        <p style="font-style: italic; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
+            <b>Lời kết:</b> Giới tính là sự tổng hợp phức tạp của nhiều yếu tố. Quan trọng nhất là sự tự chấp nhận bản thân và tôn trọng sự khác biệt của người khác thay vì ép buộc mình vào những nhãn mác cố định.
+        </p>
+
+        <div class="external-links">
+            <a href="https://www.apa.org/topics/lgbtq" target="_blank" class="btn-link">Nghiên cứu từ APA 🔗</a>
+            <a href="https://www.who.int/health-topics/gender" target="_blank" class="btn-link">Thông tin từ WHO 🔗</a>
+        </div>
+    </section>
+
+    <section id="about-us" class="card">
+        <h2 class="title">Sứ mệnh của PsyGen</h2>
+        <p style="text-align: center; line-height: 1.8;">PsyGen ra đời với mong muốn trở thành người bạn đồng hành tin cậy trên hành trình thấu hiểu bản thân. Chúng tôi tin rằng kiến thức tâm lý chính xác là chìa khóa để phá bỏ định kiến và rào cản, giúp mọi người tự tin sống với bản sắc riêng của mình.</p>
+    </section>
+
+    <section id="quiz" class="card">
+        <h2 class="title">Khảo Sát Tâm Lý Hàng Ngày</h2>
+        <p style="text-align: center; font-weight: 800; color: var(--pink);" id="quizDateText"></p>
+        <form id="quizForm"><div id="qPlace"></div></form>
+        <button class="btn-big" style="margin-top:20px" onclick="submitQuiz()">XÁC NHẬN KẾT QUẢ</button>
+        <p class="disclaimer">LƯU Ý : ĐÂY CHỈ LÀ KẾT QUẢ THAM KHẢO, KHÔNG THAY THẾ CHẨN ĐOÁN CHUYÊN KHOA. NẾU BẠN CẢM THẤY KHÔNG ỔN THÌ HÃY ĐẾN CƠ SỞ Y TẾ NGAY NHÉ💗.</p>
+        
+        <div id="quizResult" style="display:none; margin-top:40px;">
+            <div style="height:350px;"><canvas id="chartHistory"></canvas></div>
+            <div id="adviceSection" class="advice-display">
+                <h4>Thông điệp dành cho bạn:</h4>
+                <p id="adviceText" style="font-weight: bold; color: var(--blue);"></p>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/lFcSrYw-ARY" title="Healing Music" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="yoga" class="card">
+        <h2 class="title">Góc Yoga & Chữa Lành</h2>
+        
+        <div class="yoga-item">
+            <h3>BÀI TẬP 1 : TƯ THẾ CÁI CÂY</h3>
+            <p>
+                <b>HƯỚNG DẪN :</b><br>
+                Bước 1: Đứng thẳng, hai chân sát nhau. Bắt đầu từ tư thế đứng thẳng, giữ cột sống thẳng và thả lỏng vai. Hít sâu, cảm nhận sự kết nối giữa lòng bàn chân và mặt đất.<br>
+                Bước 2: Dồn trọng lượng lên một chân. Từ từ chuyển trọng lượng sang một chân (chân trụ). Giữ đầu gối chân trụ hơi mềm để tránh bị khóa khớp.<br>
+                Bước 3: Đặt bàn chân còn lại lên đùi trong của chân trụ. Nhẹ nhàng nhấc chân còn lại, đặt lòng bàn chân lên đùi trong của chân trụ (không đặt lên đầu gối để tránh chấn thương).<br>
+                Bước 4: Giữ thăng bằng và đưa hai tay lên cao. Chắp hai tay trước ngực ở tư thế cầu nguyện, hoặc vươn hai tay lên trời, lòng bàn tay hướng vào nhau.<br>
+                Bước 5: Giữ tư thế trong vài nhịp thở. Hít thở sâu, giữ tư thế từ 20–30 giây. Giữ ánh mắt tập trung vào một điểm cố định.<br>
+                Bước 6: Lặp lại với chân còn lại. Từ từ thả tay, hạ chân xuống và thực hiện tương tự.<br>
+                <b>LỢI ÍCH :</b> Cải thiện thăng bằng, tăng sự tập trung và làm vững đôi chân.
+            </p>
+            <a href="https://youtu.be/NFZk51Kws8s?si=eHryu8SLEruD2J0R" target="_blank" class="btn-link" style="text-decoration:none">📺 Xem hướng dẫn</a>
+            <button class="action-btn" onclick="toggleAlphaMusic('alphaMusic1', this)">🎵 Nhạc sóng não Alpha</button>
+            <audio id="alphaMusic1" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
+        </div>
+
+        <div class="yoga-item">
+            <h3>BÀI TẬP 2 : TƯ THẾ CHIẾN BINH</h3>
+            <p>
+                <b>HƯỚNG DẪN :</b><br>
+                Bước 1: Bắt đầu với tư thế đứng thẳng, hai chân sát nhau, thả lỏng cơ thể và hít thở đều.<br>
+                Bước 2: Bước chân trái về phía sau khoảng 1-1,2m, xoay bàn chân trái 45 độ.<br>
+                Bước 3: Gập đầu gối phải tạo góc 90 độ. Đùi phải song song với mặt sàn, chân trái duỗi thẳng.<br>
+                Bước 4: Xoay hông và thân trên về phía trước. Giữ lưng thẳng.<br>
+                Bước 5: Hít vào, nâng hai tay lên cao qua đầu, lòng bàn tay hướng vào nhau. Vai thư giãn.<br>
+                Bước 6: Nhìn thẳng hoặc nhìn lên tay, giữ từ 5-10 nhịp thở.<br>
+                Bước 7: Thở ra, hạ tay xuống và trở về tư thế ban đầu. Lặp lại với bên còn lại.<br>
+                <b>LỢI ÍCH :</b> Tăng cường sức mạnh toàn thân, mở rộng lồng ngực và cải thiện hô hấp.
+            </p>
+            <a href="https://youtu.be/Sdt0xTiSHTk?si=BMxjmN71JHBceoR2" target="_blank" class="btn-link" style="text-decoration:none">📺 Xem hướng dẫn</a>
+            <button class="action-btn" onclick="toggleAlphaMusic('alphaMusic2', this)">🎵 Nhạc sóng não Alpha</button>
+            <audio id="alphaMusic2" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3"></audio>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2 class="title">PsyCat AI Chat 🐾</h2>
+        <div class="chat-box">
+            <div class="chat-header">
+                <img src="https://img.freepik.com/premium-vector/robot-cat-vector-template-logo-design_839153-1402.jpg" class="psycat-logo">
+                <span>PsyCat Chatbot</span>
+            </div>
+            <div id="chatLogs" class="chat-view"></div>
+            <div style="padding:15px; display:flex; gap:10px; border-top:1px solid #eee;">
+                <input type="text" id="chatInp" class="form-inp" placeholder="Nhập từ khóa (lgbt, buồn, chào...)" onkeypress="if(event.key==='Enter') sendChat()">
+                <button onclick="sendChat()" class="action-btn" style="margin:0">Gửi</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="cabinet">
+        <h2>Tủ Thuốc Tinh Thần</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/3063/3063176.png" class="bottle" onclick="openMedicine()">
+        <p>Chạm để nhận lời nhắn</p>
+    </section>
+
+    <section id="experts" class="card" style="margin-top: 50px;">
+        <h2 class="title">Liên Hệ Chuyên Gia</h2>
+        <div class="expert-grid">
+            <a href="https://umcclinic.com.vn/bs-ck-ii-tran-minh-khuyen" target="_blank" class="expert-card">
+                <img src="https://umcclinic.com.vn/Data/Sites/1/media/gi%E1%BB%9Bi-thi%E1%BB%87u-bs/bs-khuy%C3%AAn-600-x-600.jpg" alt="BS Trần Minh Khuyên">
+                <h3>BS. Trần Minh Khuyên</h3>
+                <p>Chuyên khoa: Tâm thần học</p>
+            </a>
+            <a href="https://hellobacsi.com/expert/cao-kim-tham/" target="_blank" class="expert-card">
+                <img src="https://tiepthisaigon.com.vn/uploads/images/news/master-coachcao-kim-tham1.jpg" alt="Coach Cao Kim Thắm">
+                <h3>Coach Cao Kim Thắm</h3>
+                <p>Chuyên khoa: Trị liệu Tâm trí</p>
+            </a>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <h2 class="title" style="margin-bottom: 20px;">Thông Tin Liên Hệ</h2>
+        <div id="formContainer">
+            <form class="contact-form" action="https://formspree.io/f/duantamly870099@gmail.com" method="POST" onsubmit="handleContact(event)">
+                <input type="text" name="name" placeholder="Tên của bạn" required>
+                <input type="email" name="email" placeholder="Email của bạn" required>
+                <textarea name="message" placeholder="Tin nhắn của bạn..." style="height: 100px;" required></textarea>
+                <button type="submit" class="action-btn">Gửi yêu cầu hỗ trợ</button>
+            </form>
+        </div>
+        <div id="thanksMsg" style="display:none; padding: 20px;">
+            <h3 style="color: var(--blue);">Cảm ơn bạn đã liên hệ!</h3>
+            <p>PsyGen đã nhận được tin nhắn và sẽ phản hồi sớm nhất qua email của bạn.</p>
+        </div>
+        <div class="contact-grid">
+            <div class="contact-item"><h4>Email</h4><p>duantamly870099@gmail.com</p></div>
+            <div class="contact-item"><h4>Mạng xã hội</h4><p>Facebook: PsyGen Project</p></div>
+        </div>
+    </section>
+</div>
+
+<footer><p>© 2025 PsyGen Project | duantamly870099@gmail.com</p></footer>
+
+<div id="medModal" class="overlay" onclick="closeMedicine()">
+    <div class="note-paper" onclick="event.stopPropagation()">
+        <p id="medMsg" style="text-align:center; font-style:italic;"></p>
+        <button onclick="closeMedicine()" class="action-btn">Đóng</button>
+    </div>
+</div>
+
+<script>
+    // --- SLIDER LOGIC ---
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    function nextSlide() {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+    setInterval(nextSlide, 5000);
+
+    // --- 70 CÂU HỎI ---
+    const fullQuestionBank = [
+        "Bạn cảm thấy lo lắng vô cớ trong ngày?","Bạn cảm thấy khó đi vào giấc ngủ?","Bạn thấy mình lạc lõng giữa đám đông?","Bạn có thường xuyên tự trách bản thân?","Bạn thấy áp lực từ mạng xã hội?","Bạn cảm thấy mất cảm hứng với sở thích cũ?","Bạn có hay bị giật mình hoặc hoảng hốt?","Bạn thấy cơ thể mệt mỏi dù không làm nặng?","Bạn lo sợ về việc người khác đánh giá mình?","Bạn thấy khó tập trung vào công việc?",
+        "Bạn thấy tương lai mịt mờ?","Bạn có xu hướng muốn ở một mình?","Bạn dễ cáu gắt với người thân?","Bạn thấy mình không có giá trị?","Bạn có cảm giác bồn chồn ở ngực?","Bạn hay quên những việc nhỏ?","Bạn thấy ăn không ngon miệng?","Bạn lo lắng về giới tính của mình?","Bạn thấy khó chia sẻ với gia đình?","Bạn thường xuyên cảm thấy hụt hẫng?",
+        "Bạn thấy mình đang gồng mình quá mức?","Bạn ngại nhìn vào gương?","Bạn có hay bị đau đầu do căng thẳng?","Bạn cảm thấy thời gian trôi quá nhanh?","Bạn thấy mình không đủ giỏi?","Bạn lo sợ sự thay đổi?","Bạn thấy khó đưa ra quyết định?","Bạn hay so sánh mình với người khác?","Bạn thấy môi trường sống ngột ngạt?","Bạn cảm thấy mình đang bị bỏ lại?",
+        "Bạn có hay suy nghĩ tiêu cực trước khi ngủ?","Bạn thấy khó kết nối với bạn bè?","Bạn cảm thấy nhạy cảm với tiếng ồn?","Bạn có hay bị run tay hoặc đổ môi hôi?","Bạn thấy mình không có ai hiểu?","Bạn lo lắng về sức khỏe bản thân?","Bạn thấy mình dễ khóc?","Bạn cảm thấy không gian sống bừa bộn?","Bạn lo lắng về tài chính?","Bạn thấy mình đang sống hộ người khác?",
+        "Bạn thấy sợ những cuộc gọi?","Bạn cảm thấy mình đang bị quan sát?","Bạn lo lắng về lỗi lầm trong quá khứ?","Bạn thấy khó thư giãn hoàn toàn?","Bạn thấy mình có quá nhiều mặt nạo?","Bạn lo sợ thất bại?","Bạn thấy mình không có quyền tự do?","Bạn cảm thấy bị mắc kẹt?","Bạn lo lắng về các mối quan hệ?","Bạn thấy mình thiếu ngủ?",
+        "Bạn cảm thấy trống rỗng?","Bạn lo lắng về kỳ vọng của cha mẹ?","Bạn thấy mình đang làm hài lòng mọi người?","Bạn cảm thấy không an toàn khi ra ngoài?","Bạn có hay bị nghẹn ở cổ họng?","Bạn lo lắng về ngoại hình?","Bạn thấy mình đang bị đánh giá giới tính?","Bạn cảm thấy cần được ôm?","Bạn lo sợ sự cô đơn về già?","Bạn thấy mình thiếu định hướng?",
+        "Bạn cảm thấy mình đang giả vờ hạnh phúc?","Bạn lo lắng về những điều chưa xảy ra?","Bạn thấy mình không có tiếng nói?","Bạn cảm thấy bị kỳ thị ngầm?","Bạn lo sợ mất đi người thân?","Bạn thấy mình đang tiêu phí thời gian?","Bạn cảm thấy cần sự giúp đỡ?","Bạn lo lắng về ý nghĩa cuộc sống?","Bạn thấy mình đang bị ép buộc?","Bạn cảm thấy mình cần được nghỉ ngơi?"
+    ];
+
+    function initQuiz() {
+        const qPlace = document.getElementById('qPlace');
+        let currentStep = parseInt(localStorage.getItem('psy_step_70')) || 0;
+        const startIndex = (currentStep * 10) % 70;
+        const currentBatch = fullQuestionBank.slice(startIndex, startIndex + 10);
+
+        qPlace.innerHTML = currentBatch.map((q, i) => `
+            <div style="margin-bottom:20px;">
+                <p><b>${startIndex + i + 1}. ${q}</b></p>
+                <div class="ans-group">
+                    ${["Không", "Hiếm", "Đôi khi", "Thường xuyên"].map((l, v) => `
+                        <label class="ans-label"><input type="radio" name="q${i}" value="${v+1}" required><span>${l}</span></label>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('quizDateText').innerText = `Bộ khảo sát số: ${currentStep + 1} (Câu ${startIndex + 1}-${startIndex + 10})`;
+    }
+
+    let myChart = null;
+    function submitQuiz() {
+        const form = document.getElementById('quizForm');
+        if(!form.checkValidity()) { alert("Vui lòng trả lời đủ 10 câu!"); return; }
+        let score = 0;
+        new FormData(form).forEach(v => score += parseInt(v));
+        let history = JSON.parse(localStorage.getItem('psy_long_history')) || [];
+        history.push({ 
+            time: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 
+            score: score 
+        });
+        localStorage.setItem('psy_long_history', JSON.stringify(history));
+        let currentStep = parseInt(localStorage.getItem('psy_step_70')) || 0;
+        localStorage.setItem('psy_step_70', currentStep + 1);
+        document.getElementById('quizResult').style.display = 'block';
+        document.getElementById('adviceText').innerText = "Hôm nay bạn đã vất vả rồi. Hãy hít thở sâu và yêu thương bản thân nhiều hơn nhé!";
+        renderChart(history);
+        form.reset();
+        initQuiz();
+        toSec('quizResult');
+    }
+
+    function renderChart(history) {
+        const ctx = document.getElementById('chartHistory').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: history.map(h => h.time),
+                datasets: [{ 
+                    label: 'Điểm Tâm Lý', 
+                    data: history.map(h => h.score), 
+                    borderColor: '#ffafcc', 
+                    backgroundColor: 'rgba(255, 175, 204, 0.2)',
+                    fill: true, tension: 0.3
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    function toSec(id) {
+        const el = document.getElementById(id);
+        if(el) window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+    }
+
+    // --- HÀM PHÁT NHẠC ALPHA ---
+    function toggleAlphaMusic(id, btn) {
+        const audio = document.getElementById(id);
+        const allAudios = document.querySelectorAll('audio');
+        
+        if (audio.paused) {
+            allAudios.forEach(a => { a.pause(); a.currentTime = 0; });
+            document.querySelectorAll('.action-btn').forEach(b => { 
+                if(b.innerText.includes("Dừng")) b.innerText = "🎵 Nhạc sóng não Alpha"; 
+            });
+
+            audio.play();
+            btn.innerText = "⏸ Dừng nhạc Alpha";
+        } else {
+            audio.pause();
+            btn.innerText = "🎵 Nhạc sóng não Alpha";
+        }
+    }
+
+    // --- CHAT LOGIC NÂNG CẤP ---
+    function sendChat() {
+        const inp = document.getElementById('chatInp');
+        const logs = document.getElementById('chatLogs');
+        const val = inp.value.toLowerCase().trim();
+        if(!val) return;
+        
+        logs.innerHTML += `<div class="bubble user">${inp.value}</div>`;
+        
+        let reply = "PsyCat đang lắng nghe đây. Bạn có thể chia sẻ thêm về điều đó không? 🐾";
+        
+        const responses = {
+            // Giao tiếp
+            "hi": "Chào bạn! PsyCat rất vui được gặp bạn. Hôm nay của bạn thế nào?",
+            "hello": "Xin chào! Mình là PsyCat, người bạn đồng hành của bạn. Bạn cần giúp gì không?",
+            "chào": "Chào bạn nhé! Chúc bạn một ngày thật bình yên và nhẹ nhàng.",
+            "tạm biệt": "Tạm biệt bạn! Đừng quên PsyCat luôn ở đây mỗi khi bạn cần chia sẻ.",
+            "bye": "Tạm biệt! Nghỉ ngơi sớm và giữ gìn sức khỏe nhé. 🐾",
+            "cảm ơn": "Không có chi đâu! Được lắng nghe bạn là niềm vui của mình.",
+            "thanks": "Rất vui vì đã giúp được bạn. Còn điều gì muốn tâm sự không?",
+            
+            // Tâm lý chuyên sâu
+            "áp lực": "Bạn không cần phải hoàn hảo mọi lúc. Hãy thử chia nhỏ công việc và nghỉ ngơi 5 phút nhé.",
+            "cô đơn": "Cảm giác cô đơn không định nghĩa giá trị của bạn. PsyGen luôn ở đây đồng hành cùng bạn.",
+            "thất bại": "Thất bại chỉ là một bước đệm. Mỗi sai lầm đều mang tới một bài học quý giá cho tương lai.",
+            "tức giận": "Khi nóng nảy, hãy thử đếm chậm từ 1 đến 10 và uống một ngụm nước lạnh để bình tĩnh lại.",
+            "mất ngủ": "Hãy thử tắt điện thoại 30 phút trước khi ngủ và nghe nhạc sóng não Alpha trong mục 'Thư giãn'.",
+            "hít thở": "Hãy hít vào 4 giây, giữ 4 giây, và thở ra 4 giây (phương pháp Box Breathing) để làm dịu tâm trí.",
+            "viết nhật ký": "Viết ra cảm xúc là cách tuyệt vời để giải tỏa tắc nghẽn. Bạn hãy thử viết ngay lúc này xem?",
+            "thiền": "Thiền giúp bạn kết nối với hiện tại. Chỉ cần 3 phút quan sát hơi thở mỗi ngày là đủ rồi.",
+            "yêu bản thân": "Bạn xứng đáng được yêu thương bởi chính mình. Hãy nói một lời cảm ơn tới cơ thể bạn hôm nay.",
+            "giới hạn": "Thiết lập ranh giới cá nhân (Boundaries) là cách bạn bảo vệ sức khỏe tinh thần của mình.",
+            "ý nghĩa": "Ý nghĩa cuộc sống nằm trong từng khoảnh khắc bạn sống tử tế và trân trọng bản thân.",
+            "tình bạn": "Tình bạn lành mạnh là khi cả hai đều cảm thấy an toàn và được là chính mình.",
+            "gia đình": "Khoảng cách thế hệ đôi khi gây hiểu lầm. Hãy kiên nhẫn chia sẻ cảm xúc thay vì tranh luận.",
+            "đam mê": "Đừng áp lực tìm đam mê ngay lập tức. Hãy bắt đầu bằng những điều nhỏ bé khiến bạn thấy vui.",
+            "hy vọng": "Luôn có ánh sáng phía cuối con đường. Ngày mai luôn là một cơ hội mới tốt đẹp hơn.",
+
+            // LGBTQ+ & Bản sắc
+            "lgbt": "LGBTQ+ là biểu tượng của sự đa dạng. Bạn thuộc về một cộng đồng đầy màu sắc và sức mạnh!",
+            "đồng tính": "Đồng tính là một biến thể tự nhiên của con người. Yêu là yêu thôi, bạn nhé!",
+            "chuyển giới": "Bạn xứng đáng được gọi bằng cái tên và giới tính mà bạn cảm thấy thuộc về nhất.",
+            "vô tính": "Asexual (Vô tính) là một phần của sự đa dạng tính dục. Bạn hoàn toàn bình thường!",
+            "coming out": "Công khai bản thân là một hành trình. Hãy thực hiện khi bạn thấy an toàn và sẵn sàng nhất.",
+            "kỳ thị": "Sự kỳ thị đến từ sự thiếu hiểu biết của người khác. Hãy tự hào vì bạn là chính mình!",
+            "non-binary": "Phi nhị nguyên giới khẳng định giới không chỉ có Nam - Nữ. Bạn được tự do là bản sắc riêng.",
+            "linh hoạt giới": "Genderfluid có nghĩa là giới tính có thể biến thiên. Điều đó hoàn toàn hợp lệ và thú vị!",
+            "liên giới tính": "Intersex là sự đa dạng sinh học tự nhiên. Có khoảng 1.7% dân số thế giới giống bạn.",
+            
+            // Khẩn cấp
+            "buồn": "Tôi ở đây với bạn. Hãy hít thở sâu. Bạn đã vất vả nhiều rồi, nghỉ một chút nhé.",
+            "lo âu": "Thử kỹ thuật 5-4-3-2-1: Tìm 5 vật bạn thấy, 4 vật bạn nghe được để bình ổn lại.",
+            "tự tử": "LÀM ƠN! Bạn rất quan trọng. Hãy gọi 1900599930 (Việt Nam) ngay. Đừng bỏ cuộc!"
+        };
+
+        for(let key in responses) { 
+            if(val.includes(key)) { 
+                reply = responses[key]; 
+                break; 
+            } 
+        }
+
+        setTimeout(() => {
+            logs.innerHTML += `<div class="bubble bot">${reply}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }, 600);
+        
+        inp.value = "";
+    }
+
+    // --- XỬ LÝ LIÊN HỆ ---
+    async function handleContact(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = new FormData(form);
+        const res = await fetch(form.action, {
+            method: 'POST',
+            body: data,
+            headers: {'Accept': 'application/json'}
+        });
+        if(res.ok) {
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('thanksMsg').style.display = 'block';
+        } else {
+            alert("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    }
+
+    function openMedicine() {
+        const msgs = ["Bạn rất mạnh mẽ!", "Mọi chuyện rồi sẽ ổn.", "Bạn xứng đáng hạnh phúc.", "Hãy hít thở sâu nào.", "Bạn là phiên bản duy nhất!"];
+        document.getElementById('medMsg').innerText = msgs[Math.floor(Math.random()*msgs.length)];
+        document.getElementById('medModal').style.display = 'flex';
+    }
+    function closeMedicine() { document.getElementById('medModal').style.display = 'none'; }
+    
+    function toggleTheme() { 
+        const current = document.documentElement.getAttribute('data-theme');
+        document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+
+    window.onload = initQuiz;
+</script>
+
+</body>
+</html>
